@@ -3,7 +3,10 @@ const gameContainer = document.getElementById("game-container");
 const scoreElement = document.getElementById("score");
 
 let score = 0;
-let highScore = localStorage.getItem("highScore") || 0; // Retrieve high score from localStorage
+if (!localStorage.getItem("highScore")) {
+    localStorage.setItem("highScore", 0);
+}
+let highScore = localStorage.getItem("highScore");
 let gridSize = 3;
 let colorDifference = 50;
 let countdown;
