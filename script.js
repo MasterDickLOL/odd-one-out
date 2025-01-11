@@ -3,45 +3,48 @@ const gameContainer = document.getElementById("game-container");
 const scoreElement = document.getElementById("score");
 
 let score = 0;
-let gridSize = 3; // Start with a 3x3 grid
-let colorDifference = 50; // Initial color difference
-let countdown; // Interval for the timer
-let timeLeft = 10; // Time limit for each round
+let highScore = localStorage.getItem("highScore") || 0; // Retrieve high score from localStorage
+let gridSize = 3;
+let colorDifference = 50;
+let countdown;
+let timeLeft = 10;
 
-// Generate a random color
+// Display high score on the page
+const highScoreElement = document.createElement("div");
+highScoreElement.style.position = "absolute";
+highScoreElement.style.top = "40px";
+highScoreElement.style.right = "10px";
+highScoreElement.style.fontSize = "20px";
+highScoreElement.style.color = "white";
+highScoreElement.textContent = `High Score: ${highScore}`;
+document.body.appendChild(highScoreElement);
+
 function randomColor() {
   return Math.floor(Math.random() * 256);
 }
 
-// Start a new game
 function generateGrid() {
-  // Clear previous grid and reset timer
   gameContainer.innerHTML = "";
   resetTimer();
 
-  // Set grid size and prevent overflow
-  const maxGridSize = Math.min(window.innerWidth, window.innerHeight) * 0.8; // 80% of screen size
-  const cellSize = Math.floor(maxGridSize / gridSize); // Calculate cell size
+  const maxGridSize = Math.min(window.innerWidth, window.innerHeight) * 0.8;
+  const cellSize = Math.floor(maxGridSize / gridSize);
   gameContainer.style.width = `${gridSize * cellSize}px`;
   gameContainer.style.height = `${gridSize * cellSize}px`;
   gameContainer.style.gridTemplateColumns = `repeat(${gridSize}, ${cellSize}px)`;
   gameContainer.style.gridTemplateRows = `repeat(${gridSize}, ${cellSize}px)`;
 
-  // Random base color
   const baseRed = randomColor();
   const baseGreen = randomColor();
   const baseBlue = randomColor();
 
-  // Slightly different color
   const diffRed = Math.min(255, baseRed + Math.floor(Math.random() * colorDifference));
   const diffGreen = Math.min(255, baseGreen + Math.floor(Math.random() * colorDifference));
   const diffBlue = Math.min(255, baseBlue + Math.floor(Math.random() * colorDifference));
 
-  // Pick a random position for the odd one out
   const oddRow = Math.floor(Math.random() * gridSize);
   const oddCol = Math.floor(Math.random() * gridSize);
 
-  // Create grid
   for (let row = 0; row < gridSize; row++) {
     for (let col = 0; col < gridSize; col++) {
       const circle = document.createElement("div");
@@ -50,7 +53,6 @@ function generateGrid() {
       circle.style.borderRadius = "50%";
       circle.style.margin = "auto";
 
-      // Set color
       if (row === oddRow && col === oddCol) {
         circle.style.backgroundColor = `rgb(${diffRed}, ${diffGreen}, ${diffBlue})`;
         circle.addEventListener("click", onCorrectClick);
@@ -64,28 +66,32 @@ function generateGrid() {
   }
 }
 
-// Handle correct circle click
 function onCorrectClick() {
   score++;
   scoreElement.textContent = score;
 
-  // Increase difficulty every 5 levels
   if (score % 5 === 0) {
     gridSize++;
-    colorDifference = Math.max(10, colorDifference - 5); // Reduce color difference
+    colorDifference = Math.max(10, colorDifference - 5);
   }
 
   generateGrid();
 }
 
-// Handle game over
 function onGameOver() {
-  clearInterval(countdown); // Stop the timer
+  clearInterval(countdown);
+
+  // Update high score if the current score is higher
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem("highScore", highScore); // Save high score in localStorage
+    highScoreElement.textContent = `High Score: ${highScore}`;
+  }
+
   alert(`Game Over! Your score: ${score}`);
   resetGame();
 }
 
-// Start the timer
 function startTimer() {
   const timerElement = document.createElement("div");
   timerElement.id = "timer";
@@ -108,18 +114,16 @@ function startTimer() {
   }, 1000);
 }
 
-// Reset timer
 function resetTimer() {
-  clearInterval(countdown); // Stop the previous timer
+  clearInterval(countdown);
   const existingTimer = document.getElementById("timer");
   if (existingTimer) {
-    document.body.removeChild(existingTimer); // Remove the old timer element
+    document.body.removeChild(existingTimer);
   }
-  timeLeft = 10; // Reset time
-  startTimer(); // Start a new timer
+  timeLeft = 10;
+  startTimer();
 }
 
-// Reset game
 function resetGame() {
   score = 0;
   gridSize = 3;
@@ -128,5 +132,4 @@ function resetGame() {
   generateGrid();
 }
 
-// Initialize game
 generateGrid();
